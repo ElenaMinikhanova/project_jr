@@ -94,7 +94,52 @@
                 </div>
             </div>
         </div>
+
+
+            <div class="mt-4">
+        <h1 class="text-center fs-5"><b>Upload Photos</b></h1>
+        <h2 class="text-center fs-5">
+            Upload selfies, memes, or any fun pictures here.
+        </h2>
+    </div>
+
+    <div class="d-flex justify-content-center mt-5">
+        <a href="./upload.html" class="fs-4 text-primary text-decoration-none">Upload</a>
+        <a href="./images.html" class="fs-4 text-primary text-decoration-none ms-4"><b>Images</b></a>
+    </div>
+
+    <div class="images-container">
+        <div class="images-container-header">
+            <div class="column1">Name</div>
+            <div class="column2">Original Name</div>
+            <div class="column3">Size, kB</div>
+            <div class="column4">Uploaded at</div>
+            <div class="column5">Type</div>
+            <div class="column6">Delete</div>
+        </div>
+
+        <div class="images-container-body">
+            <div class="m-5 fs-1 text-capitalize text-center">
+                No images added!
+            </div>
+
+        </div>
+
+
+    </div>
+
+    <!--  Pagination Buttons -->
+    <div class="d-flex justify-content-center align-items-center gap-3 m-4">
+        <a id="btn-prev" class="btn btn-outline-primary me-2 w-25">Previous Page</a>
+        <div id="page-number" class="fs-2">1</div>
+        <div id="total-pages" class="fs-4 text-black-50">(total 100)</div>
+        <a id="btn-next" class="btn btn-outline-primary w-25">Next Page</a>
+    </div>
+
+
+
         </div>
     </header>
+    <script src="js/script_images.js"></script>
 </body>
 </html>
