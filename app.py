@@ -1,22 +1,31 @@
 import os
 import json
-import mimetypes
-import uuid
+import time
 import logging
-import re
-from http.server import BaseHTTPRequestHandler, HTTPServer
-from pprint import pprint
-from typing import Optional
-from urllib.parse import urlparse, parse_qs
+import mimetypes
 
-from db_manager import postgres_config, PostgresManager
-from requests_toolbelt.multipart import decoder
 from PIL import Image
+from urllib.parse import urlparse, parse_qs
+from requests_toolbelt.multipart import decoder
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from psycopg2 import OperationalError
+from db import DBManager
+
+postgres_config = {
+    "dbname": os.getenv("POSTGRES_DB"),
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
+    "host": 'db',
+    "port": '5432',
+}
 
 HOST = "0.0.0.0"
-PORT = 5000
-MAX_SIZE_FILE = 5*1024*1024
-ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif'}
+PORT = 8000
+UPLOAD_DIR = os.getenv("UPLOAD_DIR")
+LOGS_DIR = os.getenv("LOGS_DIR")
+BACKUPS_DIR = os.getenv("BACKUPS_DIR")
+MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE"))
+ALLOWED_EXT = {'jpg', 'jpeg', 'png', 'gif'}
 
 os.makedirs("images", exist_ok=True)
 os.makedirs("logs", exist_ok=True)
@@ -30,22 +39,14 @@ logging.basicConfig(
 )
 
 def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXT
 
-def size_file(file_data):
-    return len(file_data)<=MAX_SIZE_FILE
-
-def secure_filename(filename):
-    return filename.replace('..', '').replace('/', '').replace('\\', '')
-
-class ImageServer(BaseHTTPRequestHandler):
+class ApiServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        # для пагинации меняем self.path (путь с параметрами) на path ("чистый" путь)
-        parsed_url = urlparse(self.path)  # /api/images?page=2
-        path = parsed_url.path  # например, /api/images
-        query_params = parse_qs(parsed_url.query)
-        page = int(query_params.get('page', [1])[0])  # если ?page=2 → 2, иначе 1
-        print(self.path)
+        parsed_url = urlparse(self.path)
+        path = parsed_url.path
+        query = parse_qs(parsed_url.query)
+
         if path == "/":
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
@@ -62,9 +63,9 @@ class ImageServer(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "text/html")
             self.end_headers()
-            with open("./static/upload.html", "rb") as f:
+            with open("./static/form.html", "rb") as f:
                 self.wfile.write(f.read())
-        elif path.startswith("/style/") or path.startswith("/js/") or path.startswith("/img/"):
+        elif path.startswith("/css/") or path.startswith("/js/") or path.startswith("/img/"):
             file_path = "./static" + self.path
             if os.path.exists(file_path) and os.path.isfile(file_path):
                 self.send_response(200)
@@ -73,35 +74,29 @@ class ImageServer(BaseHTTPRequestHandler):
                 self.end_headers()
                 with open(file_path, "rb") as f:
                     self.wfile.write(f.read())
-        elif path == '/api/get-data':
-            total, data = ImageServer.db.get_page_by_page_num(page, is_print=False)
-            print("total:", total, "data:", data)
-            # [("cat.png", "url", "10kb", "2025-10-10", "jpg"),
-            # ...]
-            json_data = {
-                "items": [
-                    {
-                        "id": row[0],
-                        "name": row[1],
-                        "original_name": row[2],
-                        "size": row[3],
-                        "uploaded_at": row[4].strftime('%Y-%m-%d %H:%M:%S'),
-                        "type": row[5]
-                    }
-                    for row in data
-                ],
-                "total": total,
-                "page": page,
-            }
+        elif path == '/get-images':
+            page = query['page'][0] if query['page'][0].isdigit() else None
+            try:
+                with DBManager(postgres_config) as db:
+                    rows, total = db.get_list(page)
+                    img_list = [{
+                        'id': f[0],
+                        'filename': f[1],
+                        'original_name': f[2],
+                        'size': f[3],
+                        'upload_time': f[4].strftime('%Y-%m-%d %H:%M:%S'),
+                        'file_type': f[5]
+                    } for f in rows]
+            except OperationalError as e:
+                raise RuntimeError(f'Не удалось подключиться к базе данных: {e}')
 
-            print('==================== json_data: ===================')
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps(json_data).encode('utf-8'))
-
-        else:
-            self.send_error_response(404, '404 Not Found')
+            try:
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"list": img_list, "total": total}).encode('utf-8'))
+            except Exception as e:
+                self.send_error_response(500, f'Ошибка чтения изображений - {str(e)}')
 
     def do_POST(self):
         # если приходит пост запрос на загрузку файла
@@ -123,23 +118,32 @@ class ImageServer(BaseHTTPRequestHandler):
                 except Exception as e:
                     raise ValueError(f"Parsing multipart data - {str(e)}")
 
-                # Проверяем не превышает ли файл допустимый размер
-                if not size_file(body):
-                    raise ValueError("Content-Length должен быть меньше 5 Mb")
+                if len(body) <= 0:
+                    raise ValueError("Content-Length должен быть больше 0")
 
-                # Читаем переданные данные
+                # Проверяем не превышает ли файл допустимый размер
+                if len(body) >= (MAX_FILE_SIZE * 1024 * 1024):
+                    raise ValueError(f"Content-Length должен быть меньше {MAX_FILE_SIZE}Mb")
+
+                # читаем переданные данные в цикле
                 for part in multipart_data.parts:
                     disposition = part.headers.get(b'Content-Disposition', b'').decode('utf-8')
                     if 'filename' not in disposition:
                         continue
 
-                    # Присваиваем уникальное имя
-                    ext = disposition.rsplit('.', 1)[1].lower()
-                    unique_filename = f"{uuid.uuid4()}.{ext[:-1]}"
-                    filename = secure_filename(unique_filename)
-                    filepath = os.path.join("images", filename)
+                    filename = str(int(time.time() * 1000))
+                    original_name = disposition.split('filename="')[1].split('"')[0]
+                    filetype = original_name.rsplit('.', 1)[1].lower()
+                    file = {
+                        'original_name': original_name,
+                        'filename': filename,
+                        'size': len(body),
+                        'file_type': filetype,
+                    }
 
-                    # Сохраняем файл
+                    filepath = os.path.join(UPLOAD_DIR, f'{filename}.{filetype}')
+
+                    # Пробуем сохранить файл
                     try:
                         with open(filepath, 'wb') as f:
                             f.write(part.content)
@@ -153,9 +157,11 @@ class ImageServer(BaseHTTPRequestHandler):
                             img.load()
                             format = img.format
                             size = img.size
-                        if format.lower() not in ALLOWED_EXTENSIONS:
+                        if format.lower() not in ALLOWED_EXT:
                             raise ValueError(f'Запрещенный формат ({format})')
                         saved.append(f"{filename} (format: {format}, size: {size})")
+                        with DBManager(postgres_config) as db:
+                            db.add_file(file)
                     except Exception as e:
                         os.remove(filepath)
                         self.send_error_response(500, f"Не валидный файл ({filename}) - {str(e)}")
@@ -167,53 +173,63 @@ class ImageServer(BaseHTTPRequestHandler):
                     self.end_headers()
                     self.wfile.write(json.dumps({"path": filepath}).encode('utf-8'))
                     logging.info(f'Успех: Файл ({filepath}) успешно сохранен')
+                    print(f'Успех: Файл ({filepath}) успешно сохранен')
             except Exception as e:
                 self.send_error_response(500, f'Error saving file: {str(e)}')
 
+    def do_DELETE(self):
+        # Удаление файла по его имени
+        if self.path == '/images':
+            content_length = int(self.headers.get('Content-Length', 0))
+            try:
+                if content_length <= 0:
+                    raise ValueError('Content-Length должен быть больше 0')
 
-    def send_error_response(self, param, param1):
-        logging.info(f'Ошибка: {param1}')
-        self.send_response(param)
+                body = self.rfile.read(content_length)
+                file_id = body.decode('utf-8')
+
+                # Проверяем переданные данные на пустоту
+                if not file_id or not file_id.isdigit():
+                    raise ValueError('Пустое ID файла')
+
+                with DBManager(postgres_config) as db:
+                    item = db.get_by_id(int(file_id))
+
+                # Проверяем переданные данные на соответствие в бд
+                if not item:
+                    raise ValueError('Файл с таким ID отсутствует')
+
+                filepath = os.path.join(UPLOAD_DIR, os.path.basename(f'{item[1]}.{item[5]}'))
+
+                if os.path.exists(filepath) and os.path.isfile(filepath):
+                    os.remove(filepath)
+                    with DBManager(postgres_config) as db:
+                        db.delete_by_id(int(file_id))
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"deleted": filepath}).encode('utf-8'))
+                    logging.info(f'Успех: Файл ({filepath}) успешно удален')
+                    print(f'Успех: Файл ({filepath}) успешно удален')
+                else:
+                    raise ValueError('File is not found')
+            except Exception as e:
+                self.send_error_response(500, str(e))
+    def send_error_response(self, code, message):
+        print(f'Ошибка: {message}')
+        logging.error(f'Ошибка: {message}')
+        self.send_response(code)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
-        self.wfile.write(json.dumps({"error": param1}).encode('utf-8'))
-
-
-def run(db_object):
-    ImageServer.db = db_object
-    """
-    Класс HTTPServer сам создаёт экземпляры ImageServer, 
-    передавая только аргументы, которые ему нужны. 
-    Мы не можете напрямую изменить __init__ в ImageServer, чтобы передать туда pm, 
-    потому что HTTPServer этого не поддерживает.
-
-    Поэтому создаём промежуточный класс-наследник CustomHandler,
-    куда передаём объект подключения в качестве class attribute
-    (атрибута класса, а не экземпляра класса)
-    """
-
-    server_address = (HOST, PORT)
-    httpd = HTTPServer(server_address, ImageServer)
-    logging.info('Starting server...')
-    httpd.serve_forever()
-
+        self.wfile.write(json.dumps({"error": message}).encode('utf-8'))
 
 if __name__ == '__main__':
-    with PostgresManager(postgres_config) as pm:
-        pm.create_table()
-        # files = [f for f in os.listdir('./images_source')]
-        # print(*files)
-        # for f in files:
-        #     pm.add_file(f)
+    with DBManager(postgres_config) as pg:
+        pg.create_table()
 
-        total_count, rows = pm.get_page_by_page_num(2, is_print=False)
-        print("total_count:", total_count)
-        print(*rows, sep='\n')
-
-        run(pm)
-
-
-
-
+    server_address = (HOST, PORT)
+    httpd = ThreadingHTTPServer(server_address, ApiServer)
+    print("Server started on http://localhost")
+    httpd.serve_forever()
 
 

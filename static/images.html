@@ -22,124 +22,43 @@
         </div>
         <div>
             <div class="div">
+                <div class="empty hide" id="empty">Нет загруженных изображений</div>
             <div class="files">
-                <div class="names">
-                    Name
-                </div>
                 <div class="urls">
-                    Url
+                    Ссылка
                 </div>
-                <div class="deletes">
-                    Delete
+                <div class="names">
+                    Имя
                 </div>
-            </div>
-            <div class="files">
-                <div class="name1">
-                    <img src="img/Group.png" alt="Значку картинки" class="img1">
-                    <div>Cat.png</div>
+                <div class="size">
+                    Размер
                 </div>
-                <div class="url">
-                    https://sharefile.xyz/file.jpg
+                <div class="date">
+                    Дата
                 </div>
-                <div class="delete">
-                    <img src="img/delete.png" alt="Значку корзины">
-                </div>
-            </div>
-            <div class="files">
-                <div class="name1">
-                    <img src="img/Group.png" alt="Значку картинки" class="img1">
-                    <div>Nord.jpg</div>
-                </div>
-                <div class="url">
-                    https://sharefile.xyz/file.jpg
+                <div class="type">
+                    Тип
                 </div>
                 <div class="delete">
-                    <img src="img/delete.png" alt="Значку корзины">
+                    Удалить
                 </div>
             </div>
-            <div class="files">
-                <div class="name1">
-                    <img src="img/Group.png" alt="Значку картинки" class="img1">
-                    <div>Griz.gif</div>
-                </div>
-                <div class="url">
-                    https://sharefile.xyz/file.jpg
-                </div>
-                <div class="delete">
-                    <img src="img/delete.png" alt="Значку корзины">
-                </div>
+                <tbody class="tbody" id="tbody"></tbody>
             </div>
-            <div class="files">
-                <div class="name1">
-                    <img src="img/Group.png" alt="Значку картинки" class="img1">
-                    <div>Zero.png</div>
-                </div>
-                <div class="url">
-                    https://sharefile.xyz/file.jpg
-                </div>
-                <div class="delete">
-                    <img src="img/delete.png" alt="Значку корзины">
-                </div>
-            </div>
-            <div class="files">
-                <div class="name1">
-                    <img src="img/Group.png" alt="Значку картинки" class="img1">
-                    <div>Eric.png</div>
-                </div>
-                <div class="url">
-                    https://sharefile.xyz/file.jpg
-                </div>
-                <div class="delete">
-                    <img src="img/delete.png" alt="Значку корзины" class="img2">
-                </div>
-            </div>
-        </div>
 
-
-            <div class="mt-4">
-        <h1 class="text-center fs-5"><b>Upload Photos</b></h1>
-        <h2 class="text-center fs-5">
-            Upload selfies, memes, or any fun pictures here.
-        </h2>
-    </div>
-
-    <div class="d-flex justify-content-center mt-5">
-        <a href="./upload.html" class="fs-4 text-primary text-decoration-none">Upload</a>
-        <a href="./images.html" class="fs-4 text-primary text-decoration-none ms-4"><b>Images</b></a>
-    </div>
-
-    <div class="images-container">
-        <div class="images-container-header">
-            <div class="column1">Name</div>
-            <div class="column2">Original Name</div>
-            <div class="column3">Size, kB</div>
-            <div class="column4">Uploaded at</div>
-            <div class="column5">Type</div>
-            <div class="column6">Delete</div>
-        </div>
-
-        <div class="images-container-body">
-            <div class="m-5 fs-1 text-capitalize text-center">
-                No images added!
-            </div>
 
         </div>
 
-
-    </div>
-
-    <!--  Pagination Buttons -->
-    <div class="d-flex justify-content-center align-items-center gap-3 m-4">
-        <a id="btn-prev" class="btn btn-outline-primary me-2 w-25">Previous Page</a>
-        <div id="page-number" class="fs-2">1</div>
-        <div id="total-pages" class="fs-4 text-black-50">(total 100)</div>
-        <a id="btn-next" class="btn btn-outline-primary w-25">Next Page</a>
-    </div>
-
-
-
+        <div class="pagination" id="pagination">
+            <button class="pgBtn pgBtn--prev" id="prevBtn" onclick="onPrev()"><</button>
+            <span class="page" id="page">1 из 10</span>
+            <button class="pgBtn pgBtn--next" id="nextBtn" onclick="onNext()">></button>
         </div>
+
     </header>
+
+    <div class="alert" id="myAlert">Файл успешно загружен!</div>
+
     <script src="js/script_images.js"></script>
 </body>
 </html>

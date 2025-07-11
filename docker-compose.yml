@@ -1,43 +1,59 @@
-"services:
+services:
   db:
     image: postgres:17.5
-    container_name: postgres_17_5
+    container_name: db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - ""5435:5432""
+      - "5435:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      retries: 5
+
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: app
-    depends_on:
-      - db
-    environment:
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: ${POSTGRES_DB}
-      DB_USER: ${POSTGRES_USER}
-      DB_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - ./images:/app/images
       - ./logs:/app/logs
+      - ./backups:/app/backups
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      UPLOAD_DIR: ${UPLOAD_DIR}
+      LOGS_DIR: ${LOGS_DIR}
+      BACKUPS_DIR: ${BACKUPS_DIR}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE}
     expose:
-      - 5000
+      - 8000
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      - db
 
   nginx:
     image: nginx:alpine
     container_name: nginx
     ports:
-      - ""80:80""
+      - "80:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./static:/usr/share/nginx/html/static:ro
       - ./images:/usr/share/nginx/html/images
     depends_on:
       - app
+
 volumes:
-  pg_data:"
+  pg_data:

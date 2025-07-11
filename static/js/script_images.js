@@ -1,131 +1,170 @@
-// 1. Считаем параметр "page" из текущего URL
-const urlParams = new URLSearchParams(window.location.search);
-const page = parseInt(urlParams.get('page')) || 1;
+let pageNum = 1;
+let pagesCnt = 0;
+let itemsCnt = 0;
+let total = 0;
 
+// Вывод всплывашки с сообщениями
+const onAlert = (text, type='success', time=3000) => {
+        myAlert.innerText = text;
+        myAlert.classList.add('active', type);
+    setTimeout(() => {
+        myAlert.innerText = '';
+        myAlert.classList.remove('active', type);
+    }, time);
+};
 
-// 2. Загружаем данные с нужной страницы
-fetch(`/api/get-data?page=${page}`)
-    .then(response => response.json())
-    .then(data => {
-        const total_pages = Math.ceil(data.total / 10);
-        const container = document.querySelector('.images-container');
-        if (data && typeof data.total === 'number' && data.total > 0) { container.innerHTML = ""; }
-        const body = document.createElement('div');
-        body.className = 'images-container-body';
-
-        // 3. Отрисовываем записи
-        data.items.forEach(img => {
-            body.innerHTML += `
-            <div class="images-container-body-line">
-                <div class="images-container-body-item column1">
-                    <img src="/images/${img.name}" width="16" height="16" alt="img">
-                    <a href="/images/${img.name}">${img.name}</a>
-                </div>
-                <div class="images-container-body-item column2">${img.original_name}</div>
-                <div class="images-container-body-item column3">${img.size}</div>
-                <div class="images-container-body-item column4">${img.uploaded_at}</div>
-                <div class="images-container-body-item column5">${img.type}</div>
-                <div class="images-container-body-item column6">
-                    <a href="#" class="delete-image" data-id="${img.id}">
-                        <img src="/static/img/delete.svg" width="30" height="30" alt="img">
-                    </a>
-                </div>
-            </div>`;
-        });
-
-        container.appendChild(body);
-
-        // 4. Управление пагинацией
-
-        const btnPrev = document.getElementById('btn-prev')
-        if (page > 1) {
-            btnPrev.href = `?page=${page - 1}`;
-            btnPrev.classList.remove('disabled');  // если есть класс для стилизации недоступной кнопки
-            btnPrev.removeAttribute('aria-disabled'); // на всякий случай
-        } else {
-            btnPrev.href = '#';                      // или просто убрать href
-            btnPrev.classList.add('disabled');      // добавить класс для визуального эффекта
-            btnPrev.setAttribute('aria-disabled', 'true');  // для доступности
-        }
-        const pageNumber = document.getElementById('page-number');
-        pageNumber.innerHTML = String(page);
-
-        const totalPages = document.getElementById('total-pages');
-        totalPages.innerHTML = `(total ${total_pages})`;
-
-        const btnNext = document.getElementById('btn-next');
-        if (page < total_pages) {
-            btnNext.href = `?page=${page + 1}`;
-            btnNext.classList.remove('disabled');  // если есть класс для стилизации недоступной кнопки
-            btnNext.removeAttribute('aria-disabled'); // на всякий случай
-        } else {
-            btnNext.href = '#';                      // или просто убрать href
-            btnNext.classList.add('disabled');      // добавить класс для визуального эффекта
-            btnNext.setAttribute('aria-disabled', 'true');  // для доступности
-        }
-        console.log('page:', page, 'total_pages', total_pages);
-    });
-
-
-document.addEventListener('click', function (e) {
-    if (e.target.closest('.delete-image')) {
-        e.preventDefault();
-
-        const link = e.target.closest('.delete-image');
-        const imageId = link.dataset.id;
-        console.log('id for deleting: ', imageId)
-        const containerLine = link.closest('.images-container-body-line');
-
-        if (!imageId) return;
-
-        if (!confirm('Delete image?')) return;
-
-        fetch(`/delete/${imageId}/`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                containerLine.remove();
-            } else {
-                return response.text().then(text => {
-                    throw new Error(text || 'Ошибка удаления');
-                });
-            }
-        })
-        .catch(error => {
-            alert(`Ошибка: ${error.message}`);
-        });
+// Обновление пагинации
+const updatePagination = () => {
+    const pagination = document.getElementById("pagination");
+    const pageField = document.getElementById("page");
+    const prevBtn = document.getElementById("prevBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    pageField.innerText = `${pageNum} из ${pagesCnt}`;
+    prevBtn.classList.remove('disabled');
+    nextBtn.classList.remove('disabled');
+    if (pageNum === pagesCnt) {
+        nextBtn.classList.add('disabled');
     }
-});
+    if (pageNum === 1) {
+        prevBtn.classList.add('disabled');
+    }
 
+    if (total <= 10) {
+        pagination.classList.add('hide')
+    } else {
+        pagination.classList.remove('hide')
+    }
+};
 
+// Получение списка фоток от сервера
+const fetchList = async () => {
+    try {
+        const res = await fetch(`/get-images?page=${pageNum}`);
 
-fetch('/api/get-data')
-    .then(response => response.json())
-    .then(data => {
-        const container = document.querySelector('.images-container-body');
-        if (Array.isArray(data) && data.length > 0) { container.innerHTML = ""; }
-        const body = document.createElement('div');
-        body.className = 'images-container-bod
-        data.forEach(img => {
-            body.innerHTML += `
-            <div class="images-container-body-line">
-                <div class="images-container-body-item column1">
-                    <img src="/static/img/some-img.svg" alt="some-img" width="16" height="16">
-                    <span>${img.name}</span>
-                </div>
-                <div class="images-container-body-item column2">${img.url}</div>
-                <div class="images-container-body-item"><div class="column3">${img.size}</div></div>
-                <div class="images-container-body-item column4">${img.uploaded_at}</div>
-                <div class="images-container-body-item column5">${img.type}</div>
-                <div class="images-container-body-item column6">
-                    <img src="/static/img/delete.svg" alt="delete" width="30" height="30">
-                </div>
-            </div>`;
+        if (res.ok) {
+            const resJson = await res.json();
+            const list = resJson.list;
+            total = resJson.total;
+            pagesCnt = !total || total < 10 ? 1 : total % 10 ? ~~(total / 10) + 1 : ~~(total / 10);
+            itemsCnt = list.length;
+            updatePagination();
 
-        container.appendChild(body);
-    });
+            return list;
+        } else {
+            const resJson = await res.json();
+            onAlert(resJson.error || "Ошибка загрузки", "error");
+        }
+    } catch (err) {
+        onAlert("Ошибка сервера", "error");
+    }
+};
+
+// Генерация списка фотографий
+const renderList = (list) => {
+    const tbody = document.getElementById("tbody");
+
+    list.forEach((i => {
+        const tr = document.createElement("tr");
+        tbody.appendChild(tr);
+        // td Ссылка
+        const link = document.createElement("a");
+        link.href = `http://localhost/images/${i.filename}.${i.file_type}`;
+        link.target = '_blank';
+        link.classList.add('link');
+        link.textContent = `${i.filename}.${i.file_type}`;
+        const tdLink = document.createElement("td");
+        tdLink.classList.add('td', 'url');
+        tdLink.appendChild(link);
+        tr.appendChild(tdLink);
+        // td Имя
+        const img = document.createElement("img");
+        img.src = 'img/img.svg';
+        img.alt = 'img';
+        const tdName = document.createElement("td");
+        tdName.classList.add('td', 'name');
+        tdName.append(img, i.original_name.substring(0, i.original_name.lastIndexOf('.')));
+        tr.appendChild(tdName);
+        // td Размер
+        const tdSize = document.createElement("td");
+        tdSize.classList.add('td', 'size');
+        const size = i.size > 1000000 ? `${(i.size / 1024 / 1024).toFixed(2)}Мб` : `${(i.size / 1024).toFixed(2)}Кб`
+        tdSize.append(size);
+        tr.appendChild(tdSize);
+        // td Дата
+        const tdDate = document.createElement("td");
+        tdDate.classList.add('td', 'date');
+        tdDate.append(i.upload_time);
+        tr.appendChild(tdDate);
+        // td Тип
+        const tdType = document.createElement("td");
+        tdType.classList.add('td', 'type');
+        tdType.append(i.file_type);
+        tr.appendChild(tdType);
+        // td Удаление
+        const icon = document.createElement("img");
+        icon.src = 'img/delete.svg';
+        icon.alt = 'delete';
+        const button = document.createElement("button");
+        button.classList.add('deleteBtn');
+        button.addEventListener("click", () => onDelete(i.id));
+        button.appendChild(icon);
+        const tdDelete = document.createElement("td");
+        tdDelete.classList.add('td', 'delete');
+        tdDelete.appendChild(button);
+        tr.appendChild(tdDelete);
+    }));
+};
+
+// Обновление списка фотографий
+const onListUpdate = async () => {
+    const table = document.getElementById("table");
+    const tbody = document.getElementById("tbody");
+    const empty = document.getElementById("empty");
+    const list = await fetchList();
+    tbody.innerText = '';
+    if (list.length) {
+        renderList(list);
+        empty.classList.add('hide');
+        table.classList.remove('hide');
+    } else {
+        empty.classList.remove('hide');
+        table.classList.add('hide');
+    }
+};
+
+// Листалка назад по постраничной навигации
+const onPrev = async () => {
+    if (pageNum === 1) return;
+    pageNum--;
+    await onListUpdate();
+}
+
+// Листалка вперед по постраничной навигации
+const onNext = async() => {
+    if (pageNum === pagesCnt) return;
+    pageNum++;
+    await onListUpdate();
+}
+
+// Удаление элемента из списка
+const onDelete = async (id) => {
+    try {
+        const res = await fetch('/images', { method: 'DELETE', body: id });
+
+        if (res.ok) {
+            if (itemsCnt === 1) {
+                pageNum--;
+            }
+            await onListUpdate();
+            onAlert("Файл успешно удален", "success");
+        } else {
+            onAlert("Ошибка удаления файла", "error");
+        }
+    } catch (err) {
+        onAlert("Ошибка сервера", "error");
+    }
+};
+
+window.onload = async function() {
+    await onListUpdate();
+};
