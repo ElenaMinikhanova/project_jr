@@ -68,7 +68,7 @@ const renderList = (list) => {
         tbody.appendChild(tr);
         // td Ссылка
         const link = document.createElement("a");
-        link.href = `http://localhost/images/${i.filename}.${i.file_type}`;
+        link.href = `http://127.0.0.1//images/${i.filename}.${i.file_type}`;
         link.target = '_blank';
         link.classList.add('link');
         link.textContent = `${i.filename}.${i.file_type}`;
@@ -78,7 +78,7 @@ const renderList = (list) => {
         tr.appendChild(tdLink);
         // td Имя
         const img = document.createElement("img");
-        img.src = 'img/img.svg';
+        img.src = 'img/Group.png';
         img.alt = 'img';
         const tdName = document.createElement("td");
         tdName.classList.add('td', 'name');
@@ -102,7 +102,7 @@ const renderList = (list) => {
         tr.appendChild(tdType);
         // td Удаление
         const icon = document.createElement("img");
-        icon.src = 'img/delete.svg';
+        icon.src = 'img/delete.png';
         icon.alt = 'delete';
         const button = document.createElement("button");
         button.classList.add('deleteBtn');
@@ -156,7 +156,6 @@ const onDelete = async (id) => {
                 pageNum--;
             }
             await onListUpdate();
-            onAlert("Файл успешно удален", "success");
         } else {
             onAlert("Ошибка удаления файла", "error");
         }

@@ -2,42 +2,37 @@ html {
     height: 100%;
 }
 body {
-    font-family: "Montserrat", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: <weight>;
-    font-style: normal;
-    height: 100%;
-}
-header {
+    font-family: "Montserrat";
     background-color: #F2F5FF;
     height: 100%;
 }
 .heading {
     text-align: center;
 }
-h1 {
+.title {
     font-size: 16px;
     font-weight: 700;
-    padding: 30px 0 0 0;
-    margin: 0;
 }
-h2 {
+.subtitle {
     font-size: 14px;
     font-weight: 400;
-    margin: 0;
+    margin-top: -10px;
 }
 .button {
-    display: flex;
-    justify-content: center;
-    gap: 18px;
+    text-align: center;
     margin-top: 50px;
-}
-button {
-    background-color: #F2F5FF;
-    border: none;
     font-size: 20px;
     font-weight: 700;
+}
+.tab1 {
+    all: unset;
+    cursor: pointer;
     color: #0060FF;
+}
+.tab {
+    all: unset;
+    cursor: pointer;
+    color: #ADC0F8;
 }
 .drag {
     display: flex;
@@ -55,6 +50,11 @@ button {
 }
 .drag.dragover {
     background-color: #E6E6FA;
+}
+.h2 {
+    font-size: 14px;
+    font-weight: 400;
+    color: #0B0B0B;
 }
 h3 {
     font-size: 14px;
@@ -79,14 +79,6 @@ h3 {
     padding: 0;
     margin: 0;
 }
-.h2 {
-    margin-bottom: 12px;
-}
-#uploadIcon {
-    padding-bottom: 24px;
-    width: 50px;
-    height: 50px;
-}
 .tab {
     cursor: pointer;
     color: #ADC0F8;
@@ -100,6 +92,7 @@ h3 {
 }
 .file {
     color: white;
+    border: 1px solid #0060FF;
     border-radius: 7px;
     background-color: #0060FF;
     font-size: 12px;

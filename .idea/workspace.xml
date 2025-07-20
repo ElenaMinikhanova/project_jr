@@ -5,24 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bcd3651f-63e2-4ffc-82f6-b52ef0fd6d06" name="Changes" comment="Revert &quot;+&quot;">
-      <change afterPath="$PROJECT_DIR$/backups/dump_2025-06-24_223143.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/db.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/images/.gitkeep" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/backups/.gitkeep" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/db_manager.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/images_source/.gitkeep" beforeDir="false" afterPath="$PROJECT_DIR$/backups/.gitkeep" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nginx.conf" beforeDir="false" afterPath="$PROJECT_DIR$/nginx.conf" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logs/app.log" beforeDir="false" afterPath="$PROJECT_DIR$/logs/app.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/css/style_upload.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/style_upload.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/form.html" beforeDir="false" afterPath="$PROJECT_DIR$/static/form.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/images.html" beforeDir="false" afterPath="$PROJECT_DIR$/static/images.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/js/script_images.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/script_images.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/style/style_images.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/style_images.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/style/style_upload.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/style_upload.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/style/stylt_index.css" beforeDir="false" afterPath="$PROJECT_DIR$/static/css/stylt_index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/upload.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/static/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/script_upload.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/script_upload.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,7 +102,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751256666533</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Revert &quot;+&quot;">
+      <option name="closed" value="true" />
+      <created>1752222970245</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1752222970245</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

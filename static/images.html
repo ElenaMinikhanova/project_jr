@@ -1,52 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <link rel="icon" href="img/favicon.ico" data-base-href="img/favicon.ico">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style/style_images.css">
+    <link rel="stylesheet" href="css/style_images.css">
+    <title>Images list</title>
 </head>
-<body>
-    <header>
-        <div class="heading">
-            <h1>Upload Photos</h1>
-            <h2>Upload selfies, memes, or any fun pictures here.</h2>
+<body class="body">
+    <header class="header">
+        <h1 class="title"><a href="/">Upload Photos</a></h1>
+        <h2 class="subtitle">Upload selfies, memes, or any fun pictures here.</h2>
+        <div class="tabs">
+            <a href="/upload" class="tab">Upload</a>
+            <span class="tab active">Images</span>
         </div>
-        <div class="button">
-            <button class="tab1" onclick="window.location.href='/upload'">Upload</button>
-            <button class="tab" onclick="window.location.href='/images'">Images</button>
-        </div>
-        <div>
-            <div class="div">
-                <div class="empty hide" id="empty">Нет загруженных изображений</div>
-            <div class="files">
-                <div class="urls">
-                    Ссылка
-                </div>
-                <div class="names">
-                    Имя
-                </div>
-                <div class="size">
-                    Размер
-                </div>
-                <div class="date">
-                    Дата
-                </div>
-                <div class="type">
-                    Тип
-                </div>
-                <div class="delete">
-                    Удалить
-                </div>
-            </div>
+    </header>
+
+    <main class="main">
+        <div class="list">
+            <div class="empty hide" id="empty">Нет загруженных изображений</div>
+            <table class="table hide" id="table">
+                <thead class="thead">
+                    <tr class="tr">
+                        <th class="th url">Ссылка</th>
+                        <th class="th name">Имя</th>
+                        <th class="th size">Размер</th>
+                        <th class="th date">Дата</th>
+                        <th class="th type">Тип</th>
+                        <th class="th delete">Удалить</th>
+                    </tr>
+                </thead>
                 <tbody class="tbody" id="tbody"></tbody>
-            </div>
-
-
+            </table>
         </div>
 
         <div class="pagination" id="pagination">
@@ -54,10 +42,8 @@
             <span class="page" id="page">1 из 10</span>
             <button class="pgBtn pgBtn--next" id="nextBtn" onclick="onNext()">></button>
         </div>
+    </main>
 
-    </header>
-
-    <div class="alert" id="myAlert">Файл успешно загружен!</div>
 
     <script src="js/script_images.js"></script>
 </body>

@@ -8,26 +8,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="style/style_upload.css">
+    <link rel="stylesheet" href="css/style_upload.css">
 </head>
 <body>
     <header>
         <div class="heading">
-            <h1>Upload Photos</h1>
-            <h2>Upload selfies, memes, or any fun pictures here.</h2>
+            <h1 class="title">Upload Photos</h1>
+            <h2 class="subtitle">Upload selfies, memes, or any fun pictures here.</h2>
         </div>
         <div class="button">
             <button class="tab1" onclick="window.location.href='/upload'">Upload</button>
             <button class="tab" onclick="window.location.href='/images-list'">Images</button>
         </div>
-        <div>
+        <div class="main">
             <form class="form" id="uploadForm">
                 <div class="drag" id="dropZone">
                     <img src="img/feather_upload-cloud.png" alt="Знак загрузки" id="uploadIcon">
                     <div class="information">
                         <h2 class="h2">Select a file or drag and drop here</h2>
-                        <h3>Only support .jpg, .png and gif.</h3>
-                        <h3>Maximum file size is 5MB </h3>
+                        <h3 class="dropzoneWarning">Only support .jpg, .png and gif.</h3>
+                        <h3 class="dropzoneWarning">Maximum file size is 5MB </h3>
                     </div>
                 </div>
                 <input type="file" id="fileInput" accept=".jpg,.png,.gif">
